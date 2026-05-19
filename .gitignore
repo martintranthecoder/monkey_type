@@ -1,1 +1,11 @@
 /target
+
+# Editor / OS noise
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+
+# Local history that shouldn't ship
+history.json
