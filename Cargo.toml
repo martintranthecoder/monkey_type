@@ -1,0 +1,13 @@
+[package]
+name = "monkey_type"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crossterm = "0.28"       # Terminal input handling (raw mode, key events)
+ratatui = "0.29"         # TUI framework for rendering UI
+rand = "0.9"             # Random word selection
+serde = { version = "1", features = ["derive"] }  # Serialization for config/stats
+serde_json = "1"         # JSON for saving/loading stats
+dirs = "6"               # Platform-appropriate config/data directories
+chrono = { version = "0.4", features = ["serde"] }  # Timestamps for test results
