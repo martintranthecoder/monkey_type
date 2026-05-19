@@ -5,7 +5,6 @@ mod ui;
 
 use crate::config::{Config, TestMode};
 use crate::stats::History;
-use crate::ui::Outcome;
 use crossterm::execute;
 use crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
@@ -103,21 +102,32 @@ fn main() -> io::Result<()> {
     restore_terminal()?;
 
     match outcome {
-        Ok(Outcome::Completed(result)) => {
-            if let Ok(mut history) = History::load() {
-                let _ = history.add(result.clone());
+        Ok(results) => {
+            if !results.is_empty() {
+                if let Ok(mut history) = History::load() {
+                    for r in &results {
+                        history.results.push(r.clone());
+                    }
+                    let _ = history.save();
+                }
             }
-            println!(
-                "WPM: {:.1}  Accuracy: {:.1}%  Time: {:.1}s  ({}/{} chars)",
-                result.wpm,
-                result.accuracy,
-                result.duration_secs,
-                result.correct_chars,
-                result.total_chars,
-            );
+            if let Some(last) = results.last() {
+                let session = if results.len() > 1 {
+                    format!("  [{} runs this session]", results.len())
+                } else {
+                    String::new()
+                };
+                println!(
+                    "WPM: {:.1}  Accuracy: {:.1}%  Time: {:.1}s  ({}/{} chars){session}",
+                    last.wpm,
+                    last.accuracy,
+                    last.duration_secs,
+                    last.correct_chars,
+                    last.total_chars,
+                );
+            }
             Ok(())
         }
-        Ok(Outcome::Quit) => Ok(()),
         Err(e) => {
             eprintln!("Error: {e}");
             Err(e)

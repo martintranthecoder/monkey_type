@@ -12,8 +12,8 @@ use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
 use std::io;
 use std::time::{Duration, Instant};
 
-pub enum Outcome {
-    Completed(TestResult),
+enum ResultsAction {
+    Restart,
     Quit,
 }
 
@@ -54,7 +54,8 @@ pub fn run<B: Backend>(
     terminal: &mut Terminal<B>,
     state: &mut GameState,
     config: &Config,
-) -> io::Result<Outcome> {
+) -> io::Result<Vec<TestResult>> {
+    let mut results = Vec::new();
     loop {
         terminal.draw(|f| render(f, state))?;
 
@@ -63,7 +64,14 @@ pub fn run<B: Backend>(
                 state.finished_at = Some(Instant::now());
             }
             let result = TestResult::from_game(state, config);
-            return results_loop(terminal, &result).map(|_| Outcome::Completed(result));
+            results.push(result.clone());
+            match results_loop(terminal, &result)? {
+                ResultsAction::Restart => {
+                    restart(state, config);
+                    continue;
+                }
+                ResultsAction::Quit => return Ok(results),
+            }
         }
 
         if event::poll(Duration::from_millis(50))? {
@@ -72,9 +80,9 @@ pub fn run<B: Backend>(
                     continue;
                 }
                 match key.code {
-                    KeyCode::Esc => return Ok(Outcome::Quit),
+                    KeyCode::Esc => return Ok(results),
                     KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        return Ok(Outcome::Quit);
+                        return Ok(results);
                     }
                     KeyCode::Tab => restart(state, config),
                     _ => game::handle_key(state, key),
@@ -94,7 +102,10 @@ fn restart(state: &mut GameState, config: &Config) {
     *state = GameState::new(words, duration);
 }
 
-fn results_loop<B: Backend>(terminal: &mut Terminal<B>, result: &TestResult) -> io::Result<()> {
+fn results_loop<B: Backend>(
+    terminal: &mut Terminal<B>,
+    result: &TestResult,
+) -> io::Result<ResultsAction> {
     loop {
         terminal.draw(|f| render_results(f, result))?;
         if event::poll(Duration::from_millis(100))? {
@@ -106,9 +117,10 @@ fn results_loop<B: Backend>(terminal: &mut Terminal<B>, result: &TestResult) -> 
                     continue;
                 }
                 match code {
-                    KeyCode::Enter | KeyCode::Esc | KeyCode::Tab => return Ok(()),
+                    KeyCode::Enter | KeyCode::Tab => return Ok(ResultsAction::Restart),
+                    KeyCode::Esc => return Ok(ResultsAction::Quit),
                     KeyCode::Char('c') if modifiers.contains(KeyModifiers::CONTROL) => {
-                        return Ok(());
+                        return Ok(ResultsAction::Quit);
                     }
                     _ => {}
                 }

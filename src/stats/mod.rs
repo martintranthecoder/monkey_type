@@ -61,6 +61,7 @@ impl History {
         fs::write(path, text)
     }
 
+    #[allow(dead_code)]
     pub fn add(&mut self, result: TestResult) -> io::Result<()> {
         self.results.push(result);
         self.save()

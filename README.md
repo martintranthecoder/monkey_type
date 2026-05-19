@@ -76,7 +76,7 @@ monkey_type --help                     # see all flags
 | `tab`          | Restart the test with a fresh set of words      |
 | `esc`          | Quit (no save)                                  |
 | `ctrl+c`       | Quit                                            |
-| `enter` / `tab`| (on results screen) Dismiss results             |
+| `enter` / `tab`| (on results screen) Start a new test — same format, fresh words |
 
 ## How scoring works
 
