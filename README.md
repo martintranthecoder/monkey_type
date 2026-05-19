@@ -31,7 +31,7 @@ A terminal typing test written in Rust. Sit down, sip some coffee, watch the mon
 From source (requires Rust 1.85+ for edition 2024):
 
 ```bash
-git clone https://github.com/<you>/monkey_type
+git clone https://github.com/martintranthecoder/monkey_type
 cd monkey_type
 cargo install --path .
 ```
